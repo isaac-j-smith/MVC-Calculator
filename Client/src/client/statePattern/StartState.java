@@ -11,6 +11,8 @@ public class StartState extends State {
         if ("1234567890".contains(val)){
             this.context.setResult(val);
             this.context.setLastState(this);
+            this.context.clearEquations();
+            this.context.setFinished(false);
             this.context.setState(new GetFirstOPState(this.context));
         }else{
             this.context.setResult("0");

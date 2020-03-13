@@ -4,15 +4,21 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Observable;
+
+import client.VisitorComposite.OpStack;
+import client.VisitorComposite.Operation;
+import client.VisitorComposite.Visitor;
 import client.statePattern.*;
 
 public class CalcModel extends Observable {
 
     private String total = "";
     private CalcContext context;
-    private Boolean equationFinished = false;
     private Socket socket;
-
+    private ObjectOutputStream out;
+    private Visitor visitor;
+    private Operation op;
+    private OpStack opStack;
 
     public CalcModel(){
         try {
@@ -27,18 +33,20 @@ public class CalcModel extends Observable {
 
     public void calculate(String i){
         total = this.context.handle(i);
-        this.equationFinished = this.context.isFinished();
         upload();
         this.setChanged();
     }
 
     private void upload(){
-        if(this.equationFinished){
+        if(this.context.isFinished()){
             try{
 
-                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+                out = new ObjectOutputStream(socket.getOutputStream());
 
-                outputStream.writeObject(this.context.getEquation());
+                out.writeObject(this.context.getEquation());
+                out.flush();
+                this.context.clearEquations();
+                this.context.setFinished(false);
 
             }catch(IOException e){
                 e.printStackTrace();
